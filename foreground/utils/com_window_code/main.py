@@ -12,17 +12,18 @@ def now():
 
 
 def tx(label: str, msg: str):
-    print(f"[{now()}] [TX {label}] {msg!r}")
+    print(f"[{now()}] [TX {label}] {msg!r}",flush=True)
 
 
 def rx(label: str, msg: str):
-    print(f"[{now()}] [RX {label}] {msg!r}")
+    print(f"[{now()}] [RX {label}] {msg!r},",flush=True)
 
 
 def handshake(com: ComWindow, verbose: bool):
     if verbose:
         tx("SER", "marco")
     com.write("marco")
+    print("marco",flush=True)
     r = com.read().strip().lower()
     if verbose:
         rx("SER", r)
@@ -32,6 +33,7 @@ def handshake(com: ComWindow, verbose: bool):
     if verbose:
         tx("SER", "success")
     com.write("success")
+    print("success",flush=True)
     r = com.read().strip().lower()
     if verbose:
         rx("SER", r)
@@ -42,6 +44,7 @@ def handshake(com: ComWindow, verbose: bool):
 def send_and_read(com: ComWindow, msg: str, verbose: bool) -> str:
     if verbose:
         tx("SER", msg)
+    print(msg,flush=True)
     com.write(msg)
     r = com.read().strip()
     if verbose:
@@ -51,7 +54,7 @@ def send_and_read(com: ComWindow, msg: str, verbose: bool) -> str:
 
 async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, com: ComWindow):
     peer = writer.get_extra_info("peername")
-    print(f"[{now()}] TCP connected from {peer}")
+    print(f"[{now()}] TCP connected from {peer}",flush=True)
 
     try:
         data = await reader.read(4096)
@@ -72,7 +75,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
         # Send x to Arduino and read y back
         y = send_and_read(com, x, verbose)
-        print(f"[{now()}] Stored y={y!r} (from Arduino)")
+        print(f"[{now()}] Stored y={y!r} (from Arduino)",flush=True)
 
         # Update previous_x for next session
         setattr(handle_client, "previous_x", x)
@@ -117,11 +120,11 @@ async def main():
     # Discover Arduino and open serial once
     result = comencment_marco_polo_code.find_first_polo_port()
     if not result:
-        print("No device responded with 'polo'")
+        print("No device responded with 'polo'",flush=True)
         raise SystemExit(1)
 
     comencment_marco_polo_code.write_dict_to_file(result, "detected_port.txt")
-    print(f"[{now()}] Detected port saved: {result['port']}")
+    print(f"[{now()}] Detected port saved: {result['port']}",flush=True)
 
     com = ComWindow(port=result["port"], baudrate=9600, timeout=2)
     com.open()
@@ -130,7 +133,7 @@ async def main():
     server = await asyncio.start_server(lambda r, w: handle_client(r, w, com),
                                         host="0.0.0.0",
                                         port=LISTEN_PORT)
-    print(f"[{now()}] Listening on 0.0.0.0:{LISTEN_PORT}")
+    print(f"[{now()}] Listening on 0.0.0.0:{LISTEN_PORT}",flush=True)
 
     async with server:
         await server.serve_forever()
@@ -138,6 +141,7 @@ async def main():
 
 if __name__ == "__main__":
     try:
+        print(f"running", flush=True)
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Shutting down.")

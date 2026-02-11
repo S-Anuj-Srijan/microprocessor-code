@@ -11,7 +11,7 @@ fn main() {
     // Spawn model.py thread
     let tx_model = tx.clone();
     let handle_model = thread::spawn(move || {
-        runpythonfile_stream("utils/model.py", "model.py", tx_model);
+        runpythonfile_stream("utils/com_window_code/main.py", "model.py", tx_model);
     });
 
     // Spawn logging.py thread
